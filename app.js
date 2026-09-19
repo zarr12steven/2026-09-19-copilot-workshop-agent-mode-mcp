@@ -115,6 +115,7 @@ function renderTodos() {
 
   const unfinishedCount = todos.filter((todo) => !todo.completed).length;
   remainingCount.textContent = `未完成:${unfinishedCount} 項`;
+  clearCompletedButton.disabled = !todos.some((todo) => todo.completed);
 }
 
 todoForm.addEventListener("submit", (event) => {
@@ -139,6 +140,17 @@ todoForm.addEventListener("submit", (event) => {
 });
 
 clearCompletedButton.addEventListener("click", () => {
+  const completedCount = todos.filter((todo) => todo.completed).length;
+
+  if (completedCount === 0) {
+    return;
+  }
+
+  const shouldClear = window.confirm(`確定要清除 ${completedCount} 項已完成的待辦事項嗎？`);
+  if (!shouldClear) {
+    return;
+  }
+
   todos = todos.filter((todo) => !todo.completed);
   saveTodos();
   renderTodos();
