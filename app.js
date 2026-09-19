@@ -1,5 +1,7 @@
 const STORAGE_KEY = "offline-todo-items";
 const THEME_STORAGE_KEY = "offline-todo-theme";
+const FILTER_STORAGE_KEY = "offline-todo-filter";
+const VALID_FILTERS = ["all", "active", "completed"];
 
 const todoForm = document.querySelector("#todo-form");
 const todoInput = document.querySelector("#todo-input");
@@ -14,7 +16,7 @@ const themeLabel = document.querySelector("#theme-label");
 const filterButtons = document.querySelectorAll(".filter-button");
 
 let todos = loadTodos();
-let currentFilter = "all";
+let currentFilter = loadFilter();
 
 // 從瀏覽器的 localStorage 讀取待辦資料。
 function loadTodos() {
@@ -29,6 +31,21 @@ function loadTodos() {
 // 將目前的待辦資料保存到瀏覽器。
 function saveTodos() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+}
+
+// 讀取並驗證使用者上次選擇的篩選條件。
+function loadFilter() {
+  const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY);
+  return VALID_FILTERS.includes(savedFilter) ? savedFilter : "all";
+}
+
+// 更新篩選按鈕的選中狀態。
+function updateFilterButtons() {
+  filterButtons.forEach((button) => {
+    const isActive = button.dataset.filter === currentFilter;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive);
+  });
 }
 
 // 取得目前應套用的主題，未手動設定時交給作業系統偏好決定。
@@ -165,14 +182,12 @@ themeToggle.addEventListener("click", () => {
 filterButtons.forEach((button) => {
   button.addEventListener("click", () => {
     currentFilter = button.dataset.filter;
-    filterButtons.forEach((filterButton) => {
-      const isActive = filterButton === button;
-      filterButton.classList.toggle("active", isActive);
-      filterButton.setAttribute("aria-pressed", isActive);
-    });
+    localStorage.setItem(FILTER_STORAGE_KEY, currentFilter);
+    updateFilterButtons();
     renderTodos();
   });
 });
 
 applyTheme();
+updateFilterButtons();
 renderTodos();
